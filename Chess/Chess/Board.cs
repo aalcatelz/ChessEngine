@@ -105,10 +105,58 @@ namespace Chess
             {
                 next.MoveNumber++;
             }
+
             next.MoveColor = MoveColor.FlipColor();
             next.GenerateFen();
 
             return next;
+        }
+
+        public bool IsCheck()
+        {
+            var after = new Board(Fen);
+            after.MoveColor = MoveColor.FlipColor();
+            return after.CanEatKing();
+        }
+
+        private bool CanEatKing()
+        {
+            var badKing = FindBadKing();
+            var moves = new Moves(this);
+            foreach (var fs in YieldFigures())
+            {
+                var fm = new FigureMoving(fs, badKing);
+                if (moves.CanMove(fm))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private Square FindBadKing()
+        {
+            var badKing = MoveColor == Color.Black ? Figure.WhiteKing : Figure.BlackKing;
+            foreach (var square in Square.YieldSquares())
+            {
+                if (GetFigureAt(square) == badKing)
+                    return square;
+            }
+            return Square.None;
+        }
+
+        public IEnumerable<FigureOnSquare> YieldFigures()
+        {
+            foreach (var square in Square.YieldSquares())
+            {
+                if (GetFigureAt(square).GetColor()==MoveColor)
+                    yield return new FigureOnSquare(GetFigureAt(square),square);
+            }
+        }
+
+        public bool IsCheckAfterMove(FigureMoving fm)
+        {
+            var after = Move(fm);
+            return after.CanEatKing();
         }
     }
 }

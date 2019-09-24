@@ -36,22 +36,83 @@ namespace Chess
                     return CanKingMove();
                 case Figure.WhiteQueen:
                 case Figure.BlackQueen:
-                    return false;
+                    return CanStraightMove();
                 case Figure.WhiteRook:
                 case Figure.BlackRook:
-                    return false;
+                    return (fm.SignX == 0 || fm.SignY == 0) && CanStraightMove();
                 case Figure.WhiteBishop:
                 case Figure.BlackBishop:
-                    return false;
+                    return (fm.SignX != 0 && fm.SignY != 0) && CanStraightMove();
                 case Figure.WhiteKnight:
                 case Figure.BlackKnight:
                     return CanKnightMove();
                 case Figure.WhitePawn:
                 case Figure.BlackPawn:
-                    return false;
+                    return CanPawnMove();
                 default:
                     return false;
             }
+        }
+
+        private bool CanPawnMove()
+        {
+            if (fm.From.y < 1 || fm.From.y > 6)
+            {
+                return false;
+            }
+
+            var stepY = fm.Figure.GetColor() == Color.White ? 1 : -1;
+
+            return
+                CanPawnGo(stepY) ||
+                CanPawnJump(stepY) ||
+                CanPawnEat(stepY);
+
+        }
+
+        private bool CanPawnEat(int stepY)
+        {
+            if (board.GetFigureAt(fm.To) != Figure.None)
+                if (fm.AbsDeltaX == 1)
+                    if (fm.DeltaY == stepY)
+                        return true;
+            return false;
+        }
+
+        private bool CanPawnJump(int stepY)
+        {
+            if (board.GetFigureAt(fm.To) == Figure.None)
+                if (fm.DeltaX == 0)
+                    if (fm.DeltaY == stepY * 2)
+                        if (fm.From.y == 1 || fm.From.y == 6)
+                            if (board.GetFigureAt(new Square(fm.From.x, fm.From.y + stepY)) == Figure.None)
+                                return true;
+            return false;
+        }
+
+        private bool CanPawnGo(int stepY)
+        {
+            if (board.GetFigureAt(fm.To) == Figure.None)
+                if (fm.DeltaX == 0)
+                    if (fm.DeltaY == stepY)
+                        return true;
+            return false;
+        }
+
+        private bool CanStraightMove()
+        {
+            var at = fm.From;
+            do
+            {
+                at = new Square(at.x + fm.SignX, at.y + fm.SignY);
+                if (at == fm.To)
+                {
+                    return true;
+                }
+            } while (at.OnBoard() &&
+                     board.GetFigureAt(at) == Figure.None);
+
+            return false;
         }
 
         private bool CanKingMove()

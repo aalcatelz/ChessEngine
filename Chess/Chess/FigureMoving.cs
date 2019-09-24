@@ -35,7 +35,18 @@ namespace Chess
         public int AbsDeltaX => Math.Abs(DeltaX);
         public int AbsDeltaY => Math.Abs(DeltaY);
 
-        public int AbsSignX => Math.Sign(DeltaX);
-        public int AbsSignY => Math.Sign(DeltaY);
+        public int SignX => Math.Sign(DeltaX);
+        public int SignY => Math.Sign(DeltaY);
+
+        public override string ToString()
+        {
+            var text = (char) Figure + From.Name + To.Name;
+            if (Promotion != Figure.None)
+            {
+                text += (char) Promotion;
+            }
+
+            return text;
+        }
     }
 }
